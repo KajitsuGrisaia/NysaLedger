@@ -1,0 +1,112 @@
+/* One inherited cursor palette covers the document, controls and pressed states. */
+:root {
+  --cursor-arrow: url('assets/cursors/cursor-dracula.svg?v=compact5') 4 2, auto;
+  --cursor-link: url('assets/cursors/cursor-dracula-link.svg?v=compact5') 8 3, pointer;
+}
+:root[data-theme='light'] {
+  --cursor-arrow: url('assets/cursors/cursor-light.svg?v=white1') 4 2, auto;
+  --cursor-link: url('assets/cursors/cursor-light-link.svg?v=white1') 8 3, pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body {
+    cursor: var(--cursor-arrow);
+  }
+  :root
+    :is(
+      a,
+      button,
+      summary,
+      select,
+      label[for],
+      [role='button'],
+      [role='option'],
+      .custom-select-option,
+      .orbital-art .orbit-core
+    ):not(:disabled):not([aria-disabled='true']) {
+    cursor: var(--cursor-link);
+  }
+  :is(a, button, summary, select, label[for], [role='button'], [role='option']) :where(*) {
+    cursor: inherit;
+  }
+  .cursor-over-text,
+  input,
+  textarea,
+  [contenteditable='true'] {
+    cursor: text;
+  }
+  input,
+  textarea,
+  [contenteditable='true'] {
+    caret-color: var(--pink);
+  }
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+  ::view-transition,
+  ::view-transition-group(root),
+  ::view-transition-image-pair(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    cursor: var(--cursor-arrow);
+  }
+}
+/* The constellation must not intercept selection in the hero copy. */
+.hero-copy {
+  pointer-events: auto;
+}
+.hero-visual .orbit-label,
+.hero-visual .visual-footer,
+.orbital-art .coordinate,
+.atom-hint {
+  pointer-events: auto;
+}
+.cursor-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2147483647;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.cursor-loader.is-visible {
+  opacity: 1;
+}
+.cursor-loader::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 65deg,
+    #bd93f9 125deg,
+    #ff79c6 225deg,
+    #8be9fd 300deg,
+    transparent 360deg
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  animation: cursor-loading-spin 0.95s linear infinite;
+}
+@keyframes cursor-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .cursor-loader {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-loader::after {
+    animation: none;
+  }
+}

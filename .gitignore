@@ -1,0 +1,13 @@
+node_modules/
+.env*
+*.p12
+*.pfx
+*.key
+*.pem
+data/
+backups/
+*.nysa
+*.log
+.audit/
+*.xml
+.openai/

@@ -1,0 +1,27 @@
+{
+  "name": "nysa-ledger",
+  "version": "0.2.0",
+  "private": false,
+  "license": "MIT",
+  "type": "module",
+  "description": "Control local de comprobantes XML del SRI, cobros, gastos y retenciones.",
+  "scripts": {
+    "dev": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "linkedom": "0.18.12"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KajitsuGrisaia/NysaLedger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KajitsuGrisaia/NysaLedger/issues"
+  },
+  "homepage": "https://nysaledger.nysasoft.io"
+}

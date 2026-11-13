@@ -1,0 +1,20 @@
+name: Proponer una mejora
+description: Una idea concreta para NysaLedger
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: ¿Qué problema resolvería?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta y alternativas
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: Fuentes oficiales si afecta cálculos tributarios
+      description: Incluye enlaces, fecha y alcance. No compartas datos reales.

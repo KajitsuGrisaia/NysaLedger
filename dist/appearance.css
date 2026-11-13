@@ -1,0 +1,44 @@
+/* Nysasoft appearance contract: identical names, cursor and URL preferences. */
+:root{--brand-ledger:#e78acb;--purple:var(--accent);--pink:var(--brand-ledger);--cyan:#8be9fd;--art-primary:var(--accent)}
+.project-hero h1 .project-heading-word:not(.project-ledger-word){color:var(--fg)}
+.project-hero h1 .project-ledger-word{color:var(--brand-ledger)}
+.design-picker{max-width:90px;min-height:40px;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
+html[data-theme='light']{--bg:#f2eff8;--surface:#ffffff;--raised:#e8e3f1;--fg:#282a36;--muted:#575c70;--line:#c8bdd8;--accent:#7446a4;--blue:#236c82;--positive:#2e6c4d;--amber:#8a512c;--danger:#9e4657}
+html[data-theme='light'][data-design='aurora']{--bg:#eef6f4;--surface:#fdfefe;--raised:#e1efeb;--fg:#25343a;--muted:#52666a;--line:#c4d9d4}
+html[data-theme='light'][data-design='terminal']{--bg:#f0f4ef;--surface:#fafcf8;--raised:#e2eade;--fg:#25372d;--muted:#526457;--line:#c6d3c5}
+html[data-theme='light'][data-design='eclipse']{--bg:#faf3ed;--surface:#fffaf5;--raised:#f0e4da;--fg:#362c35;--muted:#695764;--line:#dcc9c3}
+html[data-theme=dark][data-design=aurora]{--bg:#101b20;--sidebar:#141e24;--surface:#19262d;--raised:#21323b;--line:#30434b;--art-primary:#8be9fd}html[data-theme=dark][data-design=terminal]{--bg:#101914;--sidebar:#141e18;--surface:#19261e;--raised:#223329;--line:#304637;--art-primary:#50fa7b}html[data-theme=dark][data-design=eclipse]{--bg:#1b141c;--sidebar:#201922;--surface:#291f2c;--raised:#342839;--line:#4a374e;--art-primary:#ffb86c}
+html[data-theme=light]{--sidebar:var(--surface);--brand-ledger:#a14579}
+.cursor-halo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  z-index: 12;
+  opacity: 0;
+  transition: opacity 0.35s;
+  will-change: transform;
+}
+.cursor-halo::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: -15px;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(
+    circle,
+    #eef3ff33 0%,
+    #c3d2ff29 18%,
+    #9db9ff14 38%,
+    #aabaff06 55%,
+    transparent 72%
+  );
+  border-radius: 50%;
+}
+.cursor-halo.visible {
+  opacity: 1;
+}
+@media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce){.cursor-halo{display:none}}

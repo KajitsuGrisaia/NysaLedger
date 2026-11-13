@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NysaLedger"><title>NysaLedger · registros en órbita</title><defs>
+<linearGradient id="left" x1="150" y1="65" x2="230" y2="445" gradientUnits="userSpaceOnUse"><stop stop-color="#bd93f9"/><stop offset=".5" stop-color="#bd93f9"/><stop offset="1" stop-color="#ef8fd0"/></linearGradient>
+<linearGradient id="right" x1="300" y1="70" x2="400" y2="440" gradientUnits="userSpaceOnUse"><stop stop-color="#bd93f9"/><stop offset=".5" stop-color="#ef8fd0"/><stop offset="1" stop-color="#8be9fd"/></linearGradient>
+<linearGradient id="orb" x1="248" y1="72" x2="265" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#ef8fd0"/><stop offset=".5" stop-color="#bd93f9"/><stop offset="1" stop-color="#8be9fd"/></linearGradient>
+<linearGradient id="ledger" x1="210" y1="215" x2="315" y2="328" gradientUnits="userSpaceOnUse"><stop stop-color="#bd93f9"/><stop offset=".5" stop-color="#ef8fd0"/><stop offset="1" stop-color="#8be9fd"/></linearGradient>
+<radialGradient id="orb-aura"><stop stop-color="#bd93f9" stop-opacity=".55"/><stop offset="1" stop-color="#bd93f9" stop-opacity="0"/></radialGradient>
+</defs>
+
+
+
+<g fill="#8be9fd"><path d="M253 120h6v6h-6zM252 135h8v8h-8z"/></g>
+<path d="M247 155h18v18h-18z" fill="#bd93f9"/><path d="M256 173v20" stroke="#bd93f9" stroke-width="3"/>
+<g fill="none" stroke="#bd93f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M160 256h27M325 256h10l7 7h10l6-7h17"/><path d="M256 330v53"/></g>
+<circle cx="153" cy="256" r="6" fill="none" stroke="#ef8fd0" stroke-width="3"/><circle cx="382" cy="256" r="6" fill="none" stroke="#8be9fd" stroke-width="3"/>
+<g transform="translate(-20.48 -20.48) scale(1.08)">
+<path d="M218 314V205h63l28 28v81Z" fill="#22212c" stroke="url(#ledger)" stroke-width="4.8" stroke-linejoin="round"/>
+<path d="M281 206v28h27" fill="none" stroke="#d99bdf" stroke-width="4.8" stroke-linejoin="round"/>
+<text x="233" y="253" font-family="Arial,sans-serif" font-weight="700" font-size="29" fill="#bda4ee">SRI</text>
+<path d="M235 267h55M235 281h55" stroke="#b3c4e8" stroke-width="4.5" stroke-linecap="round"/>
+<text x="284" y="306" font-family="Arial,sans-serif" font-weight="700" font-size="22" fill="#c6a7ea">$</text>
+<rect x="174" y="246" width="50" height="69" rx="5" fill="#b69ae9"/>
+<rect x="180" y="252" width="38" height="15" rx="2" fill="#22212c"/>
+<g fill="#22212c"><path d="M180 273h9v9h-9zm14 0h9v9h-9zm14 0h9v9h-9zm-28 14h9v9h-9zm14 0h9v9h-9zm14 0h9v9h-9zm-28 14h9v9h-9zm14 0h9v9h-9zm14 0h9v9h-9z"/></g>
+<g fill="url(#right)"><path d="M322 292h11v22h-11zM340 280h11v34h-11zM358 268h11v46h-11z"/></g>
+<path d="m321 272 15-14 10 5 25-27m-10 1 10-1-2 10" fill="none" stroke="#c29bdf" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g fill="#8be9fd"><path d="M209 181h8v8h-8zM281 180h6v6h-6zM285 192h10v10h-10zM317 216h9v9h-9z"/></g>
+<path d="M252 350h8v8h-8zM246 383h20v20h-20z" fill="#ef8fd0"/>
+<path d="M252 418h8v8h-8zM253 436h6v6h-6z" fill="#8be9fd"/></svg>
