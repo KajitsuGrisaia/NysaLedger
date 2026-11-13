@@ -1,11 +1,11 @@
 /* One inherited cursor palette covers the document, controls and pressed states. */
 :root {
-  --cursor-arrow: url('assets/cursors/cursor-dracula.svg?v=compact5') 4 2, auto;
-  --cursor-link: url('assets/cursors/cursor-dracula-link.svg?v=compact5') 8 3, pointer;
+  --cursor-arrow: url('assets/cursors/cursor-dracula.svg') 4 2, auto;
+  --cursor-link: url('assets/cursors/cursor-dracula-link.svg') 8 3, pointer;
 }
 :root[data-theme='light'] {
-  --cursor-arrow: url('assets/cursors/cursor-light.svg?v=white1') 4 2, auto;
-  --cursor-link: url('assets/cursors/cursor-light-link.svg?v=white1') 8 3, pointer;
+  --cursor-arrow: url('assets/cursors/cursor-light.svg') 4 2, auto;
+  --cursor-link: url('assets/cursors/cursor-light-link.svg') 8 3, pointer;
 }
 @media (hover: hover) and (pointer: fine) {
   html,
