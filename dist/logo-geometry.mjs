@@ -155,7 +155,7 @@ const root=globalThis;
       };
     };
     function extrude(points, material, depth) {
-      if(activeTransform)points=points.map(([x,y])=>[x*activeTransform.scale+activeTransform.x,y*activeTransform.scale+activeTransform.y]);
+      if(activeTransform){points=points.map(([x,y])=>[x*activeTransform.scale+activeTransform.x,y*activeTransform.scale+activeTransform.y]);depth*=.65;}
       if (points.length < 3 || !material) return;
       const orientation =
         Math.sign(

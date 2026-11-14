@@ -9,14 +9,14 @@
 <circle class="ledger-orb-aura" cx="256" cy="80" r="29" fill="url(#orb-aura)" opacity=".5"/>
 <circle class="ledger-orb" cx="256" cy="80" r="10" fill="url(#orb)"/>
 <g fill="#8be9fd"><path d="M253 120h6v6h-6zM252 135h8v8h-8z"/></g>
-<path d="M247 155h18v18h-18z" fill="#bd93f9"/><path d="M256 173v20" stroke="#bd93f9" stroke-width="3"/>
-<g fill="none" stroke="#bd93f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M160 256h27M325 256h10l7 7h10l6-7h17"/><path d="M256 330v53"/></g>
+<path d="M247 155h18v18h-18z" fill="#bd93f9"/><path d="M256 173v40" stroke="#bd93f9" stroke-width="3"/>
+<g fill="none" stroke="#bd93f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M160 256h27M325 256h10l7 7h10l6-7h17"/><path d="M256 305v78"/></g>
 <circle cx="153" cy="256" r="6" fill="none" stroke="#ef8fd0" stroke-width="3"/><circle cx="382" cy="256" r="6" fill="none" stroke="#8be9fd" stroke-width="3"/>
-<g transform="translate(-20.48 -20.48) scale(1.08)">
-<path d="M218 314V205h63l28 28v81Z" fill="#22212c" stroke="url(#ledger)" stroke-width="4.8" stroke-linejoin="round"/>
-<path d="M281 206v28h27" fill="none" stroke="#d99bdf" stroke-width="4.8" stroke-linejoin="round"/>
+<g class="ledger-finance" transform="translate(51.2 51.2) scale(.8)">
+<path d="M218 314V205h63l28 28v81Z" fill="#22212c" stroke="url(#ledger)" stroke-width="3.6" stroke-linejoin="round"/>
+<path d="M281 206v28h27" fill="none" stroke="#d99bdf" stroke-width="3.6" stroke-linejoin="round"/>
 <text x="233" y="253" font-family="Arial,sans-serif" font-weight="700" font-size="29" fill="#bda4ee">SRI</text>
-<path d="M235 267h55M235 281h55" stroke="#b3c4e8" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M235 267h55M235 281h55" stroke="#b3c4e8" stroke-width="3.2" stroke-linecap="round"/>
 <text x="284" y="306" font-family="Arial,sans-serif" font-weight="700" font-size="22" fill="#c6a7ea">$</text>
 <rect x="174" y="246" width="50" height="69" rx="5" fill="#b69ae9"/>
 <rect x="180" y="252" width="38" height="15" rx="2" fill="#22212c"/>

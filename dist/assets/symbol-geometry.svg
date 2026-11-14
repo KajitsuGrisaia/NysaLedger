@@ -9,16 +9,16 @@
 
 <circle class="ledger-orb" cx="256" cy="80" r="10" fill="url(#orb)"/>
 <g fill="#8be9fd"><path d="M253 120h6v6h-6zM252 135h8v8h-8z"/></g>
-<path d="M247 155h18v18h-18z" fill="#bd93f9"/><path d="M256 173v20" stroke="#bd93f9" stroke-width="3"/>
-<g fill="none" stroke="#bd93f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M160 256h27M325 256h10l7 7h10l6-7h17"/><path d="M256 330v53"/></g>
+<path d="M247 155h18v18h-18z" fill="#bd93f9"/><path d="M256 173v40" stroke="#bd93f9" stroke-width="3"/>
+<g fill="none" stroke="#bd93f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M160 256h27M325 256h10l7 7h10l6-7h17"/><path d="M256 305v78"/></g>
 <circle cx="153" cy="256" r="6" fill="none" stroke="#ef8fd0" stroke-width="3"/><circle cx="382" cy="256" r="6" fill="none" stroke="#8be9fd" stroke-width="3"/>
-<g transform="translate(-20.48 -20.48) scale(1.08)">
-<path d="M218 314V205h63l28 28v81Z" fill="none" stroke="url(#ledger)" stroke-width="4.8" stroke-linejoin="round"/>
-<path d="M281 206v28h27" fill="none" stroke="#d99bdf" stroke-width="4.8" stroke-linejoin="round"/>
+<g class="ledger-finance" transform="translate(51.2 51.2) scale(.8)">
+<path d="M218 314V205h63l28 28v81Z" fill="none" stroke="url(#ledger)" stroke-width="3.6" stroke-linejoin="round"/>
+<path d="M281 206v28h27" fill="none" stroke="#d99bdf" stroke-width="3.6" stroke-linejoin="round"/>
 <path d="M247 232h-12v9h12v10h-12 M254 253v-21h10v10h-10m5 0 7 11 M273 232v21" fill="none" stroke="#bda4ee" stroke-width="3.2"/>
-<path d="M235 267h55M235 281h55" stroke="#b3c4e8" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M235 267h55M235 281h55" stroke="#b3c4e8" stroke-width="3.2" stroke-linecap="round"/>
 <path d="M296 291h-9v6h9v6h-9m5-15v18" fill="none" stroke="#c6a7ea" stroke-width="2.3"/>
-<path d="M174 246h50v69h-50Z"       fill="none" stroke="#b69ae9" stroke-width="4"/>
+<path d="M174 246h50v69h-50Z"       fill="none" stroke="#b69ae9" stroke-width="3"/>
 <path d="M180 252h38v15h-38Z"       fill="none" stroke="#b69ae9" stroke-width="2.5"/>
 <g fill="#b69ae9"><path d="M180 273h9v9h-9zm14 0h9v9h-9zm14 0h9v9h-9zm-28 14h9v9h-9zm14 0h9v9h-9zm14 0h9v9h-9zm-28 14h9v9h-9zm14 0h9v9h-9zm14 0h9v9h-9z"/></g>
 <g fill="url(#right)"><path d="M322 292h11v22h-11zM340 280h11v34h-11zM358 268h11v46h-11z"/></g>

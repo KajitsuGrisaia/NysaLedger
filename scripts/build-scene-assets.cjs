@@ -15,7 +15,7 @@ geometry=geometry.replace(/<text x="284"[\s\S]*?<\/text>/,'<path d="M296 291h-9v
 // Keep the financial icon open like the parent's circuitry. Solid plates
 // caused painter-order occlusion of small raised strokes at oblique angles.
 geometry=geometry.replace('fill="#22212c" stroke="url(#ledger)"','fill="none" stroke="url(#ledger)"');
-geometry=geometry.replace('fill="#b69ae9"','fill="none" stroke="#b69ae9" stroke-width="4"');
+geometry=geometry.replace('fill="#b69ae9"','fill="none" stroke="#b69ae9" stroke-width="3"');
 geometry=geometry.replaceAll('fill="#22212c"','fill="#b69ae9"');
 // The calculator display is an outlined recess, with separate raised keys.
 geometry=geometry.replace(/(<path d="M180 252h38v15h-38Z"[^>]*?)fill="#b69ae9"/, '$1fill="none" stroke="#b69ae9" stroke-width="2.5"');
@@ -29,7 +29,7 @@ if(fs.existsSync(source)){
  code=code.slice(0,code.lastIndexOf('  const api ='))+'\nexport {create,settle,parsePath,inset,shadeColor};\n';
  code=code.replace('circuits.push(points);', 'if(!activeTransform)circuits.push(points);');
  code=code.replace('function extrude(points, material, depth) {', `function extrude(points, material, depth) {
-      if(activeTransform)points=points.map(([x,y])=>[x*activeTransform.scale+activeTransform.x,y*activeTransform.scale+activeTransform.y]);`);
+      if(activeTransform){points=points.map(([x,y])=>[x*activeTransform.scale+activeTransform.x,y*activeTransform.scale+activeTransform.y]);depth*=.65;}`);
  code=code.replace("    for (const node of svg.querySelectorAll('path,circle')) {", `    let activeTransform=null;
     for (const node of svg.querySelectorAll('path,circle')) {
       const transform=node.closest('[transform]')?.getAttribute('transform')||'';
