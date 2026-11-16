@@ -71,10 +71,9 @@ html[data-theme=light] .ledger-model figcaption{color:#20768b}
 
 .project-nysasoft{color:var(--fg);white-space:nowrap}.project-nysasoft .project-brand-pink{color:#e78acb}
 
-.support-button-heart{display:inline-block;transition:color 180ms ease,transform 180ms ease}
-@media(hover:hover){:is(button,a):hover .support-button-heart{color:#e78acb;transform:scale(1.12)}}
-:is(button,a):focus-visible .support-button-heart{color:#e78acb}
-@media(prefers-reduced-motion:reduce){.support-button-heart{transition:none}:is(button,a):hover .support-button-heart{transform:none}}
+.kofi-button-logo{display:inline-block;width:28px;height:28px;flex:none;border-radius:8px;vertical-align:middle;transition:transform 220ms ease}
+@media(hover:hover){a:hover .kofi-button-logo{transform:translateY(-1px) rotate(-6deg)}}
+@media(prefers-reduced-motion:reduce){.kofi-button-logo{transition:none}a:hover .kofi-button-logo{transform:none}}
 
 .project-heading-word{display:inline-block;transform-origin:center 65%;transition:transform 180ms cubic-bezier(.22,.7,.2,1),color 180ms ease}
 @media(hover:hover) and (pointer:fine){.project-hero .project-heading-word:hover{transform:scale(1.045);color:#8be9fd}}
