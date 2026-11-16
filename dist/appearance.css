@@ -1,5 +1,5 @@
 /* Nysasoft appearance contract: identical names, cursor and URL preferences. */
-:root{--brand-ledger:#e78acb;--purple:var(--accent);--pink:var(--brand-ledger);--cyan:#8be9fd;--art-primary:var(--accent)}
+:root{--brand-ledger:#e78acb;--purple:#bd93f9;--pink:var(--brand-ledger);--cyan:#8be9fd;--art-primary:var(--accent)}
 .project-hero h1 .project-heading-word:not(.project-ledger-word){color:var(--fg)}
 .project-hero h1 .project-ledger-word{color:var(--brand-ledger)}
 .design-picker{max-width:90px;min-height:40px;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
@@ -43,7 +43,7 @@ html[data-theme=light]{--sidebar:var(--surface);--brand-ledger:#a14579}
 }
 @media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce){.cursor-halo{display:none}}
 
-/* Same art palette as Nysasoft; UI accent stays purple as in its banner. */
+/* Shared Nysasoft artwork and interaction colors. */
 :root{--green:var(--positive);--orange:var(--amber);--art-secondary:var(--cyan);--art-tertiary:var(--pink);--art-shadow:#282a36}
 html[data-theme=light]{--cyan:#236c82;--art-primary:#7446a4;--art-secondary:#236c82;--art-tertiary:#a14579}
 html[data-design=aurora]{--art-primary:var(--cyan);--art-secondary:var(--purple);--art-tertiary:var(--green)}
@@ -52,3 +52,22 @@ html[data-design=eclipse]{--art-primary:var(--orange);--art-secondary:var(--purp
 .ledger-model figcaption{color:var(--cyan)}.ledger-model .logo-action{color:var(--accent)}
 .project-symbol.pink,.support-heart{color:var(--brand-ledger)}
 html[data-theme=light] .project-heading-word:hover{color:var(--cyan)}
+
+/* One interaction accent per design, matching Nysasoft's section controls. */
+:root{--accent:var(--purple);--accent-ink:#10111b;--control-hover-mix:#ffffff;--green:#50fa7b;--orange:#ffb86c;--control-radius:7px}
+html[data-theme=dark]{--bg:#10111b;--surface:#191b2a;--fg:#f8f8f2;--muted:#b4b8cc;--line:#303246}
+html[data-theme=dark][data-design=aurora]{--bg:#0f1920;--surface:#15242c;--line:#2b444e}
+html[data-theme=dark][data-design=terminal]{--bg:#0d1413;--surface:#14201c;--line:#2d4439}
+html[data-theme=dark][data-design=eclipse]{--bg:#1a141b;--surface:#251b26;--line:#493545}
+html[data-theme=light]{--purple:#7446a4;--green:#2e6c4d;--orange:#8a512c;--accent-ink:#ffffff;--control-hover-mix:#282a36}
+html[data-design=orbit]{--accent:var(--purple)}
+html[data-design=aurora]{--accent:var(--cyan);--control-radius:30px}
+html[data-design=terminal]{--accent:var(--green);--control-radius:3px}
+html[data-design=eclipse]{--accent:var(--orange);--control-radius:6px}
+.button{border-radius:var(--control-radius);transition:background-color 180ms ease,border-color 180ms ease,color 180ms ease,transform 180ms ease}
+.button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.button.primary:not(:disabled):hover{background:color-mix(in srgb,var(--accent) 88%,var(--control-hover-mix));border-color:var(--accent);color:var(--accent-ink)}
+.button.ghost:not(:disabled):hover{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-color:var(--accent);color:var(--fg)}
+.button:focus-visible{outline-color:var(--accent)}
+.brand strong span,.project-brand-pink{color:var(--brand-ledger)}
+@media(prefers-reduced-motion:reduce){.button{transition:none}}
