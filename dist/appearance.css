@@ -42,3 +42,13 @@ html[data-theme=light]{--sidebar:var(--surface);--brand-ledger:#a14579}
   opacity: 1;
 }
 @media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce){.cursor-halo{display:none}}
+
+/* Same art palette as Nysasoft; UI accent stays purple as in its banner. */
+:root{--green:var(--positive);--orange:var(--amber);--art-secondary:var(--cyan);--art-tertiary:var(--pink);--art-shadow:#282a36}
+html[data-theme=light]{--cyan:#236c82;--art-primary:#7446a4;--art-secondary:#236c82;--art-tertiary:#a14579}
+html[data-design=aurora]{--art-primary:var(--cyan);--art-secondary:var(--purple);--art-tertiary:var(--green)}
+html[data-design=terminal]{--art-primary:var(--green);--art-secondary:var(--cyan);--art-tertiary:var(--purple)}
+html[data-design=eclipse]{--art-primary:var(--orange);--art-secondary:var(--purple);--art-tertiary:var(--pink)}
+.ledger-model figcaption{color:var(--cyan)}.ledger-model .logo-action{color:var(--accent)}
+.project-symbol.pink,.support-heart{color:var(--brand-ledger)}
+html[data-theme=light] .project-heading-word:hover{color:var(--cyan)}

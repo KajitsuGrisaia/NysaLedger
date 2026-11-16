@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DOMParser} from 'linkedom';
+import {parseSriXml} from '../dist/xml.mjs';
+import {emptyState,monthlySummary,documentBalance,addMovement} from '../dist/ledger.mjs';
+import {settlement,periodReview,importOverview} from '../dist/workflow.mjs';
+import {demoFiles,demoRuc} from '../dist/demo.mjs';
+function fixture(){const s={...emptyState(),profile:{ruc:demoRuc},documents:demoFiles().map(f=>parseSriXml(f.text,f.name,DOMParser))};const r=s.documents[2];r.retentions[0]={...r.retentions[0],rate:'3',amount:450};r.retentions[1]={...r.retentions[1],rate:'70',amount:1575};r.total=2025;return s;}
+test('factura y retenciones se concilian sin registrar cobros imaginarios',()=>{let s=fixture();const d=s.documents[0],v=settlement(d,s);assert.equal(v.net,15225);assert.equal(v.pending,15225);assert.equal(v.paid,0);assert.equal(v.vat,1575);assert.equal(v.income,450);assert.equal(monthlySummary(s,'2026-11').vatDue,675);s=addMovement(s,{kind:'income',date:'2026-11-12',amount:15225,documentId:d.id});assert.equal(documentBalance(d,s),0);assert.equal(settlement(d,s).paid,15225);});
+test('lote distingue ingresos, gastos y renta/IVA recibidos, sin sumar documentos pendientes',()=>{const s=fixture();let v=importOverview(s.documents,demoRuc);assert.deepEqual([v.income,v.expense,v.vatRetention,v.incomeRetention],[15000,4000,1575,450]);s.documents[0].reviewed=false;v=importOverview(s.documents,demoRuc);assert.equal(v.income,0);assert.equal(v.review,1);});
+test('retención sin factura se advierte y se vincula al importar el sustento exacto',()=>{const s=fixture(),d=s.documents.shift();assert.ok(periodReview(s,'2026-11').issues.some(i=>i.code==='missing-invoice'));s.documents.push(d);assert.ok(!periodReview(s,'2026-11').issues.some(i=>i.code==='missing-invoice'));s.documents.find(d=>d.type==='07').retentions[0].supportNumber='001001000000001';assert.ok(periodReview(s,'2026-11').issues.some(i=>i.code==='missing-invoice'));assert.equal(settlement(d,s).income,0);});
+test('detecta sobrepago y compras a revisar sin convertir renta en IVA',()=>{const s=fixture();s.movements.push({documentId:s.documents[0].id,amount:17250,kind:'income',date:'2026-11-12'});const r=periodReview(s,'2026-11');assert.ok(r.issues.some(i=>i.code==='overpaid'));assert.ok(r.issues.some(i=>i.code==='purchase-vat'));assert.equal(r.summary.inputVat,0);});

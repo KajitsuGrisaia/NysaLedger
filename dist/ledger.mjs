@@ -4,16 +4,16 @@ export const money = value => moneyFormat.format((value || 0) / 100);
 export const emptyState = () => ({ schema:1, profile:{name:'Nysasoft', ruc:'', regime:'General'}, documents:[], movements:[], balances:{}, updatedAt:null });
 export const signed = doc => doc.type === '04' ? -1 : 1;
 export const included = doc => !doc.excluded && doc.reviewed && doc.environment === '2';
-export function documentBalance(doc, state) {
-  if (doc.type !== '01' && doc.type !== '03' && doc.type !== '05') return 0;
-  const direction = classify(doc, state.profile.ruc);
-  if (!['income','expense'].includes(direction)) return 0;
-  const paid = state.movements.filter(m => m.documentId === doc.id).reduce((sum,m) => sum + m.amount, 0);
-  const supplier = doc.type === '03' ? doc.recipientId : doc.issuerId;
-  const retained = state.documents.filter(r => r.type === '07' && included(r) && classify(r,state.profile.ruc) === (direction === 'income' ? 'retention-received' : 'retention-issued')).reduce((sum,r) => sum + r.retentions.filter(t => normalizeNumber(t.supportNumber) === normalizeNumber(doc.number) && (direction === 'income' ? r.issuerId === doc.recipientId : r.recipientId === supplier)).reduce((n,t) => n+t.amount,0),0);
-  const credited = state.documents.filter(c => c.type === '04' && included(c) && c.issuerId === doc.issuerId && c.recipientId === doc.recipientId && normalizeNumber(c.supportNumber) === normalizeNumber(doc.number)).reduce((sum,c) => sum+c.total,0);
-  return Math.max(0,doc.total-paid-retained-credited);
+export function documentSettlement(doc,state){
+  if(!['01','03','05'].includes(doc.type)||!['income','expense'].includes(classify(doc,state.profile.ruc)))return {retentions:[],vat:0,income:0,retained:0,paid:0,credits:0,net:0,pending:0,overpaid:0};
+  const kind=classify(doc,state.profile.ruc),expense=kind==='expense';
+  const retentions=state.documents.filter(r=>r.type==='07'&&included(r)&&classify(r,state.profile.ruc)===(expense?'retention-issued':'retention-received')).flatMap(r=>r.retentions.filter(t=>normalizeNumber(t.supportNumber)===normalizeNumber(doc.number)&&(expense?r.recipientId===(doc.type==='03'?doc.recipientId:doc.issuerId):r.issuerId===doc.recipientId)).map(t=>({...t,documentId:r.id,number:r.number})));
+  const vat=retentions.filter(t=>t.tax==='2').reduce((n,t)=>n+t.amount,0),income=retentions.filter(t=>t.tax==='1').reduce((n,t)=>n+t.amount,0),retained=retentions.reduce((n,t)=>n+t.amount,0);
+  const paid=state.movements.filter(m=>m.documentId===doc.id).reduce((n,m)=>n+m.amount,0);
+  const credits=state.documents.filter(c=>c.type==='04'&&included(c)&&c.issuerId===doc.issuerId&&c.recipientId===doc.recipientId&&normalizeNumber(c.supportNumber)===normalizeNumber(doc.number)).reduce((n,c)=>n+c.total,0);
+  return {retentions,vat,income,retained,paid,credits,net:Math.max(0,doc.total-retained-credits),pending:Math.max(0,doc.total-paid-retained-credits),overpaid:Math.max(0,paid+retained+credits-doc.total)};
 }
+export const documentBalance=(doc,state)=>documentSettlement(doc,state).pending;
 export function monthlySummary(state, period) {
   const result = {sales:0, expenses:0, outputVat:0, inputVat:0, receivedVat:0, receivedIncome:0, issuedVat:0, issuedIncome:0, collected:0, paid:0, receivable:0, payable:0, review:0, documents:0, prior:state.balances[period] || 0, vatDue:0, nextCredit:0};
   for(const doc of state.documents) {
