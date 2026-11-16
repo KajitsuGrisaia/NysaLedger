@@ -1,3 +1,4 @@
+import {orbitalPose} from './orbits.mjs';
 import {settle,create as createGeometry} from './logo-geometry.mjs';
 // Bevelled Nysasoft geometry with the approved NysaLedger interior artwork.
 // Everything stays on-device; no 3D library or network service is required.
@@ -66,11 +67,11 @@ export function mountLedgerScene(container) {
     ctx.clearRect(0,0,width,height);
     // Orbital paths and electrons remain separate from the drag rotation.
     for(let k=0;k<3;k++){
-      const angle=(-25+k*65)*Math.PI/180+elapsed*.000025,tilt=(66+k*2)*Math.PI/180;
+      const {angle,tilt,electron:electronAngle}=orbitalPose(k,elapsed);
       const orbit=a=>{const x=Math.cos(a)*290,y=Math.sin(a)*290*Math.cos(tilt),z=Math.sin(a)*290*Math.sin(tilt);return projectPoint([x*Math.cos(angle)-y*Math.sin(angle),x*Math.sin(angle)+y*Math.cos(angle),z],{x:0,y:0},width,height);};
       const colors=globalThis.NysaVisualPalette?.get();const color=colors?[colors.primary,colors.secondary,colors.tertiary][k]:['#bd93f9','#8be9fd','#ef8fd0'][k];ctx.strokeStyle=color;ctx.globalAlpha=light?.4:.3;ctx.lineWidth=.8;ctx.beginPath();
-      for(let i=0;i<=90;i++){const p=orbit(i/90*Math.PI*2);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);}ctx.stroke();ctx.globalAlpha=1;
-      const electron=orbit(elapsed*.00032*(k%2?-1:1)+k*2);ctx.fillStyle=color;ctx.beginPath();ctx.arc(electron.x,electron.y,2.1,0,Math.PI*2);ctx.fill();
+      for(let i=0;i<=140;i++){const p=orbit(i/140*Math.PI*2);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);}ctx.stroke();ctx.globalAlpha=1;
+      const electron=orbit(electronAngle);ctx.fillStyle=color;ctx.beginPath();ctx.arc(electron.x,electron.y,2.1,0,Math.PI*2);ctx.fill();
     }
     if(!loaded)return;
     // The same lit, bevelled bracket geometry as the Nysasoft banner.

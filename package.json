@@ -1,6 +1,6 @@
 {
   "name": "nysa-ledger",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "license": "MIT",
   "type": "module",
@@ -11,6 +11,7 @@
     "check": "node scripts/check.mjs"
   },
   "devDependencies": {
+    "fake-indexeddb": "^6.2.8",
     "linkedom": "0.18.12"
   },
   "engines": {

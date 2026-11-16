@@ -10,20 +10,30 @@ function database() {
   });
   return dbPromise;
 }
-export async function loadState() {
-  const db=await database();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction('state','readonly');const r=tx.objectStore('state').get('current');
-    r.onsuccess=()=>resolve(r.result||emptyState());r.onerror=()=>reject(Error('No se pudieron leer tus datos locales.'));
-  });
+let activeCompanyId='primary';
+const stateKey=id=>id==='primary'?'current':'company:'+id;
+function transact(db,mode,work){return new Promise((resolve,reject)=>{const tx=db.transaction('state',mode),store=tx.objectStore('state');let result;work(store,value=>result=value,tx);tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error||Error('No se pudieron guardar los datos locales.'));tx.onabort=tx.onerror;});}
+export async function loadState(){
+ const db=await database();
+ return transact(db,'readonly',(store,done)=>{const r=store.get('companies');r.onsuccess=()=>{activeCompanyId=r.result?.activeId||'primary';const q=store.get(stateKey(activeCompanyId));q.onsuccess=()=>done(q.result||emptyState());};});
 }
-export async function saveState(state) {
-  const db=await database();const next={...state,updatedAt:new Date().toISOString()};
-  await new Promise((resolve,reject)=>{
-    const tx=db.transaction('state','readwrite');tx.objectStore('state').put(next,'current');
-    tx.oncomplete=resolve;tx.onerror=()=>reject(Error('No se pudo guardar. Comprueba el espacio disponible y exporta un respaldo.'));tx.onabort=tx.onerror;
-  });
-  return next;
+export async function listCompanies(){
+ const db=await database();return transact(db,'readonly',(store,done)=>{const r=store.get('companies');r.onsuccess=()=>{if(r.result)done({activeId:activeCompanyId,companies:r.result.companies});else{const q=store.get('current');q.onsuccess=()=>done({activeId:'primary',companies:[{id:'primary',name:q.result?.profile.name||'Mi negocio',ruc:q.result?.profile.ruc||''}]});}};});
+}
+export async function saveState(state){
+ const db=await database(),next={...state,updatedAt:new Date().toISOString()};
+ await transact(db,'readwrite',(store,done,tx)=>{const r=store.get('companies');r.onsuccess=()=>{const registry=r.result||{activeId:activeCompanyId,companies:[{id:activeCompanyId}]};if(next.profile.ruc&&registry.companies.some(c=>c.id!==activeCompanyId&&c.ruc===next.profile.ruc)){tx.abort();return;}registry.companies=registry.companies.map(c=>c.id===activeCompanyId?{id:c.id,name:next.profile.name||'Mi negocio',ruc:next.profile.ruc}:c);store.put(next,stateKey(activeCompanyId));store.put(registry,'companies');};});return next;
+}
+export async function createCompany(name,ruc){
+ name=String(name||'').trim();ruc=String(ruc||'').trim();
+ if(!name||name.length>100||!/^\d{13}$/.test(ruc))throw Error('Ingresa un nombre y un RUC de 13 dígitos.');
+ const db=await database(),id=crypto.randomUUID(),next={...emptyState(),profile:{name,ruc,regime:'General'}};
+ let failure='';
+ await transact(db,'readwrite',(store,done,tx)=>{const r=store.get('companies');r.onsuccess=()=>{const finish=registry=>{if(registry.companies.some(c=>c.ruc===ruc)){failure='Ese RUC ya tiene un espacio. Selecciónalo en la lista.';tx.abort();return;}if(registry.companies.length>=50){failure='Se alcanzó el límite de 50 compañías en este navegador.';tx.abort();return;}registry.companies.push({id,name,ruc});registry.activeId=id;store.put(registry,'companies');store.put(next,stateKey(id));};if(r.result)finish(r.result);else{const q=store.get('current');q.onsuccess=()=>finish({activeId:'primary',companies:[{id:'primary',name:q.result?.profile.name||'Mi negocio',ruc:q.result?.profile.ruc||''}]});}};}).catch(e=>{throw Error(failure||e.message);});activeCompanyId=id;return next;
+}
+export async function switchCompany(id){
+ const db=await database();let failure='';
+ const next=await transact(db,'readwrite',(store,done,tx)=>{const r=store.get('companies');r.onsuccess=()=>{const registry=r.result;if(!registry?.companies.some(c=>c.id===id)){failure='Compañía no encontrada.';tx.abort();return;}const q=store.get(stateKey(id));q.onsuccess=()=>{registry.activeId=id;store.put(registry,'companies');done(q.result||emptyState());};};}).catch(e=>{throw Error(failure||e.message);});activeCompanyId=id;return next;
 }
 const b64=bytes=>{
   let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);

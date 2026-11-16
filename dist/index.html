@@ -24,7 +24,7 @@
   <aside class="sidebar">
     <a class="brand" href="#overview" aria-label="NysaLedger, inicio"><span class="brand-lockup"><img src="assets/symbol-animated.svg" alt="" width="36" height="36"><span><strong><span class="brand-prompt">&gt;_</span>Nysa<span class="brand-ledger">Ledger</span></strong><small>POR &gt;_NYSASOFT · ECUADOR / ES</small></span></span></a>
     <div class="workspace"><span class="workspace-icon">N</span><span><strong id="workspace-name">Nysasoft</strong><small id="workspace-status">Espacio local</small></span><span class="local-dot" title="Datos guardados en este navegador"></span></div>
-    <p class="nav-label">TU ESPACIO DE TRABAJO</p>
+    <div class="company-controls"><label for="company-picker">Compañía activa</label><select id="company-picker" aria-label="Compañía activa"></select><button class="text-button" data-action="add-company">＋ Agregar compañía</button></div><p class="nav-label">TU ESPACIO DE TRABAJO</p>
     <button class="mobile-nav-toggle" type="button" data-action="mobile-menu" aria-expanded="false" aria-controls="primary-navigation"><span><small>SECCIONES</small><strong id="mobile-nav-label">Vista general</strong></span><span class="mobile-nav-chevron" aria-hidden="true">⌄</span></button>
     <nav id="primary-navigation" aria-label="Principal">
       <button data-view="overview"><span aria-hidden="true">◫</span>Vista general</button>
@@ -34,10 +34,10 @@
       <button data-view="summary"><span aria-hidden="true">▥</span>Resumen mensual</button>
       <button data-view="project"><span aria-hidden="true">✦</span>Proyecto y comunidad</button>
     </nav>
-    <div class="sidebar-bottom"><button data-view="settings"><span aria-hidden="true">⚙</span>Perfil y respaldos</button><button data-action="install"><span aria-hidden="true">↓</span>Instalar NysaLedger</button><button data-action="help"><span aria-hidden="true">?</span>Cómo funciona</button><div class="privacy-small"><span class="local-dot"></span> Tus XML se quedan aquí.<small>Sin conexión con tu cuenta del SRI.</small></div><small class="version">NysaLedger 0.2 · por Nysasoft</small></div>
+    <div class="sidebar-bottom"><button data-view="settings"><span aria-hidden="true">⚙</span>Perfil y respaldos</button><button data-action="install"><span aria-hidden="true">↓</span>Instalar NysaLedger</button><button data-action="nysa-help"><span aria-hidden="true">✦</span>Ayuda Nysa</button><button data-action="help"><span aria-hidden="true">?</span>Cómo funciona</button><div class="privacy-small"><span class="local-dot"></span> Tus XML se quedan aquí.<small>Sin conexión con tu cuenta del SRI.</small></div><small class="version">NysaLedger 0.3.0 · por Nysasoft</small></div>
   </aside>
   <div class="shell">
-    <header class="topbar"><span class="breadcrumb"><span class="breadcrumb-root">Mi espacio</span><span class="breadcrumb-divider">/</span> <strong id="page-label">Vista general</strong></span><div class="topbar-actions"><a class="nysasoft-return" href="https://nysasoft.io/" aria-label="Volver a Nysasoft"><span aria-hidden="true">←</span><span><span class="return-prefix">Volver a </span>Nysasoft</span></a><select class="design-picker" data-design-picker aria-label="Tema visual"><option value="orbit">Orbit</option><option value="aurora">Aurora</option><option value="terminal">Studio</option><option value="eclipse">Eclipse</option></select><span class="privacy-pill" title="Datos guardados en este dispositivo">◉ Datos locales</span><button class="icon-button" data-action="theme" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">◐</button><button class="avatar" data-view="settings" aria-label="Abrir perfil">N</button></div></header>
+    <header class="topbar"><span class="breadcrumb"><span class="breadcrumb-root">Mi espacio</span><span class="breadcrumb-divider">/</span> <strong id="page-label">Vista general</strong></span><div class="topbar-actions"><a class="nysasoft-return" href="https://nysasoft.io/" aria-label="Volver a Nysasoft"><span aria-hidden="true">←</span><span><span class="return-prefix">Volver a </span>Nysasoft</span></a><select class="design-picker" data-design-picker aria-label="Tema visual"><option value="orbit">Orbit</option><option value="aurora">Aurora</option><option value="terminal">Studio</option><option value="eclipse">Eclipse</option></select><span class="privacy-pill" title="Datos guardados en este dispositivo">◉ Datos locales</span><button class="icon-button" data-action="theme" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">◐</button><button class="icon-button release-history" id="release-history" data-action="changelog" aria-label="Ver historial de cambios">◷</button><button class="avatar" data-view="settings" aria-label="Abrir perfil">N</button></div></header>
     <div id="demo-banner" hidden>DEMO · Documentos ficticios. Tus datos reales permanecen separados. <button data-action="leave-demo">Salir de la demo ↗</button></div>
     <main id="main" tabindex="-1"><p class="loading">Abriendo tu espacio local…</p></main>
     <footer>Hecho con intención. <span>Resumen de apoyo: revisa los importes antes de declarar.</span></footer>
@@ -45,6 +45,6 @@
   <input id="xml-input" type="file" accept=".xml,text/xml,application/xml" multiple hidden>
   <input id="backup-input" type="file" accept=".nysa,application/json" hidden>
   <dialog id="modal"><div id="modal-content"></div></dialog>
-  <div id="toast" role="status" aria-live="polite"></div>
+  <aside id="release-notice" aria-live="polite" hidden></aside><div id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

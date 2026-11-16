@@ -70,7 +70,7 @@ Elige emisor o receptor como perspectiva, o ingresa un RUC de referencia. Revisa
 
 En Android, abre el futuro enlace HTTPS público en Chrome y elige **Instalar aplicación** o **Añadir a pantalla de inicio**. En Chrome/Edge de escritorio, usa la opción de instalación del navegador. La app también ofrece un botón si el navegador proporciona la solicitud de instalación. No hay APK ni publicación en Google Play en esta versión.
 
-La primera carga prepara los archivos públicos de la app en una caché local. El service worker no almacena XML ni respaldos; estos siguen en IndexedDB o en los archivos que exportas. Las actualizaciones se ofrecen sin recargar automáticamente ni borrar los datos. Guarda formularios pendientes antes de actualizar. La instalación no sincroniza dispositivos: usa un respaldo cifrado para trasladar datos.
+La primera carga prepara los archivos públicos de la app en una caché local. El service worker no almacena XML ni respaldos; estos siguen en IndexedDB o en los archivos que exportas. Desde v0.3.0, las actualizaciones se aplican automáticamente cuando no hay formularios, importaciones o guardados pendientes. La notificación superior muestra la versión y abre el historial; su indicador permanece hasta leerlo. Los navegadores sin Web Locks mantienen el botón de actualización manual. La instalación no sincroniza dispositivos: usa un respaldo cifrado para trasladar datos.
 
 El enlace `127.0.0.1` solo sirve en la computadora que ejecuta el servidor; no permite probar la instalación desde otro teléfono. La prueba real en Android queda pendiente del origen HTTPS autorizado por el propietario.
 
@@ -99,3 +99,11 @@ Orbit, Aurora, Studio y Eclipse usan el cursor y la identidad de Nysasoft, con m
 La app usa un origen independiente: `nysaledger.nysasoft.io`. El perfil y los documentos de localhost no se migran automáticamente: crea un respaldo cifrado y restáuralo en la dirección pública.
 
 Para Cloudflare Workers Static Assets: ejecuta `npm run check`, `npm test` y `npx wrangler deploy` con una sesión autorizada. `wrangler.jsonc` conecta el subdominio. Sites conserva una publicación adicional a partir de `dist/`. Nunca empaquetes `.audit`, XML reales, respaldos o firmas.
+
+## Varias compañías
+
+Usa Compañía activa → Agregar compañía para crear un espacio por RUC. Cada compañía conserva sus propios XML, revisiones, movimientos y saldos. El espacio original se conserva sin cambios. Los respaldos cifrados corresponden a la compañía activa: crea uno por compañía. No son cuentas en servidor ni se sincronizan entre dispositivos.
+
+## Nysa
+
+Ayuda Nysa ofrece una guía local sin IA generativa. La propuesta de integración de NysaAI está en docs/nysa-ai-integration.md; el proveedor remoto no está activado y nunca se envían XML automáticamente.

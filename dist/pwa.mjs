@@ -10,7 +10,7 @@ export async function requestInstall() {
   await prompt.prompt(); await prompt.userChoice; notify(); return true;
 }
 export function applyUpdate() { registration?.waiting?.postMessage({type: 'ACTIVATE_UPDATE'}); }
-export async function preparePwa() {
+export async function preparePwa({canUpdate=()=>false,onUpdate=()=>location.reload()}={}) {
   if (!pwaState().supported) return;
   try {
     registration = await navigator.serviceWorker.register('./sw.mjs', {scope: './', type: 'module', updateViaCache: 'none'});
@@ -22,7 +22,20 @@ export async function preparePwa() {
     watchInstall();
     const active = await navigator.serviceWorker.ready;
     ready = !!active.active; notify();
-    // Never reload automatically: an import or a form may be in progress.
-    navigator.serviceWorker.addEventListener('controllerchange', notify);
+    // All tabs must be idle before activating a new shell: never interrupt a form or import.
+    const idle=()=>canUpdate()&&!document.hidden;
+    let updating=false,needsReload=false,hadController=!!navigator.serviceWorker.controller;
+    const attempt=async()=>{
+      if(needsReload&&idle()){needsReload=false;onUpdate();return;}
+      if(updating||!registration.waiting||!idle())return;
+      if(!navigator.locks)return; // Older browsers keep the explicit update action.
+      await navigator.locks.request('nysaledger-work',{mode:'exclusive',ifAvailable:true},lock=>{if(!lock||!idle())return;updating=true;applyUpdate();});
+    };
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{needsReload=hadController;hadController=true;notify();if(needsReload&&idle()){needsReload=false;onUpdate();}});
+    document.addEventListener('nysa:pwa-state',attempt);
+    document.addEventListener('nysa:idle',attempt);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){registration.update().catch(()=>{});attempt();}});
+    setInterval(attempt,15000);
+    attempt();
   } catch { ready = false; notify(); }
 }

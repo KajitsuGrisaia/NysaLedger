@@ -1,9 +1,10 @@
+import {VERSION,RELEASES,canAutoUpdate} from './releases.mjs';
 import './visual-palette.mjs';
 import {settlement,periodReview,importOverview} from './workflow.mjs';
 import {mountLedgerScene} from './ledger-scene.mjs';
 import {parseSriXml,classify,TYPES,cents,MAX_XML_BYTES} from './xml.mjs';
 import {emptyState,monthlySummary,documentBalance,mergeDocuments,addMovement,money,csv,included,signed} from './ledger.mjs';
-import {loadState,saveState,encryptBackup,decryptBackup,validateRestoredState} from './storage.mjs';
+import {loadState,saveState,listCompanies,createCompany,switchCompany,encryptBackup,decryptBackup,validateRestoredState} from './storage.mjs';
 import {demoFiles,demoRuc} from './demo.mjs';
 import {communityMarkup,supportMarkup,installationMarkup} from './community.mjs';
 import {preparePwa,requestInstall,applyUpdate} from './pwa.mjs';
@@ -21,8 +22,22 @@ const h=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const labels={overview:'Vista general',documents:'Comprobantes',movements:'Cobros y pagos',retentions:'Retenciones',summary:'Resumen mensual',settings:'Perfil y respaldos',project:'Proyecto y comunidad'};
 const kindNames={income:'Ingreso',expense:'Gasto','retention-received':'Retención recibida','retention-issued':'Retención emitida',unassigned:'Sin asignar'};
+function nysaHelp(){openModal('Nysa · Tu guía en NysaLedger',`<p class="tag">Guía local · Sin IA generativa</p><p>Encuentra el siguiente paso sin compartir tus XML ni tus datos.</p><h3>¿Cómo importo mis comprobantes?</h3><p>Selecciona la compañía correcta, configura su RUC y abre Comprobantes → Importar XML. Antes de guardar verás ingresos, gastos y retenciones del lote.</p><h3>¿Por qué el cobro es menor que la factura?</h3><p>Abre la factura para ver retenciones vinculadas, notas de crédito y cobros registrados. El saldo distingue facturado de cobrado.</p><h3>¿Cómo preparo el mes?</h3><p>En Resumen mensual revisa los documentos pendientes, el IVA de compras elegible y las retenciones de IVA y renta por separado. Exporta el CSV y confirma las obligaciones aplicables en el SRI.</p><h3>¿Puedo llevar dos compañías?</h3><p>Sí. Agrega otra compañía desde el selector lateral. Cada RUC tiene datos y respaldos independientes.</p><p class="mini-note">La conexión con NysaAI se está preparando. Esta guía no envía consultas a un modelo ni presenta declaraciones.</p><div class="form-buttons"><button class="button primary" data-action="close-modal">Entendido</button></div>`);}
 let state=emptyState(),realState=state,view='overview',period=today().slice(0,7),demo=false,filter='all',search='',staged=[],modalSubmit=null,restoreFile=null,saving=false,importing=false;
 const modal=$('#modal');
+let companyList={activeId:'primary',companies:[]},workRelease=null,releaseTimer;
+const dirtyInputs=new Set();
+function hasDirtyForms(){for(const el of dirtyInputs){if(!el.isConnected){dirtyInputs.delete(el);continue;}const dialog=el.closest('dialog');if(!dialog||dialog.open)return true;}return false;}
+function workBusy(){return saving||importing||modal.open||hasDirtyForms()||demo;}
+function holdWork(){if(!workRelease&&navigator.locks)navigator.locks.request('nysaledger-work',{mode:'shared'},()=>new Promise(resolve=>{workRelease=resolve;if(!workBusy())releaseWork();}));}
+function releaseWork(){if(!workBusy()&&workRelease){workRelease();workRelease=null;}document.dispatchEvent(new Event('nysa:idle'));}
+function changelog(){openModal('NysaLedger · Historial de cambios',RELEASES.map(r=>`<section><h3>v${h(r.version)}</h3><p class="mini-note">${h(r.date)}</p><ul>${r.changes.map(c=>'<li>'+h(c)+'</li>').join('')}</ul></section>`).join('')+'<div class="form-buttons"><button class="button primary" data-action="close-modal">Listo</button></div>');try{localStorage.setItem('nysa-release-read',VERSION);}catch{}$('#release-notice').hidden=true;$('#release-history').classList.remove('unread');}
+function releaseNotice(){
+ $('#release-history').textContent='◷ v'+VERSION;
+ try{const previous=localStorage.getItem('nysa-version')||(state.profile.ruc||state.documents.length?'0.2.0':null);localStorage.setItem('nysa-version',VERSION);if(previous&&previous!==VERSION)localStorage.setItem('nysa-release-pending',VERSION);if(localStorage.getItem('nysa-release-pending')===VERSION&&localStorage.getItem('nysa-release-read')!==VERSION){$('#release-history').classList.add('unread');$('#release-notice').innerHTML='<button data-action="changelog"><strong>NysaLedger se ha actualizado a v'+VERSION+'</strong><span>Clic para ver los cambios ↗</span></button>';$('#release-notice').hidden=false;releaseTimer=setTimeout(()=>$('#release-notice').hidden=true,8000);}}catch{}
+}
+async function refreshCompanies(){companyList=await listCompanies();const select=$('#company-picker');select.innerHTML=companyList.companies.map(c=>`<option value="${h(c.id)}">${h(c.name||'Mi negocio')}${c.ruc?' · '+h(c.ruc):''}</option>`).join('');select.value=companyList.activeId;select.disabled=demo;}
+function companyDialog(){if(workBusy())throw Error('Termina el trabajo en curso antes de cambiar de compañía.');openModal('Agregar compañía',`<p>Cada compañía mantiene su propio RUC, XML, movimientos, retenciones y resumen mensual en este dispositivo.</p><form id="modal-form"><div class="form-field"><label for="company-name">Nombre de la compañía</label><input id="company-name" name="name" maxlength="100" required></div><div class="form-field"><label for="company-ruc">RUC de la compañía</label><input id="company-ruc" name="ruc" inputmode="numeric" pattern="[0-9]{13}" maxlength="13" required></div>${errorSlot}<div class="form-buttons">${cancel}<button class="button primary">Crear espacio</button></div></form>`,async form=>{const d=new FormData(form);state=await createCompany(d.get('name'),d.get('ruc'));realState=state;closeModal();await refreshCompanies();navigate('settings');toast('Compañía creada. Sus datos están separados.');});}
 let toastTimer;
 let disposeLedgerScene=()=>{};
 function closeMobileMenu(){document.querySelector('.sidebar').classList.remove('menu-open');document.querySelector('[data-action="mobile-menu"]').setAttribute('aria-expanded','false');}
@@ -31,13 +46,13 @@ function toast(message,error=false){clearTimeout(toastTimer);const el=$('#toast'
 function download(content,name,type='application/octet-stream'){
   const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
-function openModal(title,body,onSubmit=null){modalRevision++;modalClosing=false;modalSubmit=onSubmit;$('#modal-content').innerHTML=`<div class="modal-head"><h2>${h(title)}</h2><button class="icon-button" type="button" data-action="close-modal" aria-label="Cerrar">×</button></div><div class="modal-body">${body}</div>`;if(!modal.open)modal.showModal();revealDialog(modal);}
-function closeModal(){if(!modal.open||modalClosing)return;modalClosing=true;const revision=++modalRevision;modalSubmit=null;dismissDialog(modal).then(()=>{if(revision===modalRevision)modal.close();});}
+function openModal(title,body,onSubmit=null){modalRevision++;modalClosing=false;modalSubmit=onSubmit;holdWork();$('#modal-content').innerHTML=`<div class="modal-head"><h2>${h(title)}</h2><button class="icon-button" type="button" data-action="close-modal" aria-label="Cerrar">×</button></div><div class="modal-body">${body}</div>`;if(!modal.open)modal.showModal();revealDialog(modal);}
+function closeModal(){if(!modal.open||modalClosing)return;modalClosing=true;const revision=++modalRevision;modalSubmit=null;dismissDialog(modal).then(()=>{if(revision===modalRevision){modal.close();releaseWork();}});}
 function formError(error){const el=$('#modal-error');if(el){el.textContent=error.message||String(error);el.focus();}else toast(error.message||String(error),true);}
 async function persist(next){
   if(saving)throw Error('Espera a que termine el guardado anterior.');
-  saving=true;
-  try{state=demo?{...next,updatedAt:new Date().toISOString()}:await saveState(next);if(!demo)realState=state;}finally{saving=false;}
+  saving=true;holdWork();
+  try{state=demo?{...next,updatedAt:new Date().toISOString()}:await saveState(next);if(!demo)realState=state;}finally{saving=false;releaseWork();}
 }
 const errorSlot='<p id="modal-error" class="error" role="alert" tabindex="-1"></p>';
 const cancel='<button type="button" class="button ghost" data-action="close-modal">Cancelar</button>';
@@ -97,7 +112,7 @@ function summary(){
     `<section class="panel"><div class="panel-heading"><h2>Compras: revisa el crédito tributario</h2><small>Elegibilidad manual por documento</small></div>${docTable(visibleDocuments().filter(d=>classify(d,state.profile.ruc)==='expense'))}</section><p class="mini-note">No se toma automáticamente el IVA de todas tus compras como crédito. Abre cada documento y confirma su elegibilidad. Las notas de crédito reducen las bases e impuestos del período de emisión; revisa casos de otros períodos con tu contador.</p>`;
 }
 function settings(){return head('Un espacio que se adapta a ti.','Tu perfil, tus datos y tus copias de seguridad.')+
-  `<section class="settings-grid"><div class="panel"><div class="panel-heading"><h2>Perfil del contribuyente</h2><span class="tag">UN RUC POR ESPACIO</span></div><div class="panel-body"><form id="profile-form"><div class="form-field"><label for="profile-name">Nombre del negocio</label><input id="profile-name" name="name" maxlength="100" value="${h(state.profile.name)}" required></div><div class="form-field"><label for="profile-ruc">Tu RUC</label><input id="profile-ruc" name="ruc" inputmode="numeric" pattern="[0-9]{13}" minlength="13" maxlength="13" value="${h(state.profile.ruc)}" ${state.documents.length?'readonly':''} required><p class="form-hint">Necesario para clasificar documentos. No se consulta ni verifica tu inscripción con el SRI.${state.documents.length?' El RUC queda fijo mientras haya documentos para evitar reclasificarlos por error.':''}</p></div><div class="form-field"><label for="profile-regime">Régimen (referencia)</label><select id="profile-regime" name="regime">${['General','RIMPE emprendedor','RIMPE negocio popular','Otro / por revisar'].map(r=>`<option ${state.profile.regime===r?'selected':''}>${r}</option>`).join('')}</select><p class="form-hint">El régimen no cambia automáticamente la elegibilidad ni determina tu periodicidad tributaria.</p></div><button class="button primary" ${demo?'disabled':''}>Guardar perfil</button></form></div></div><div class="panel"><div class="panel-heading"><h2>Tus datos, bajo tu control</h2><span class="tag green">LOCAL</span></div><div class="panel-body"><div class="backup-action"><h3>Respaldo cifrado</h3><p>Incluye perfil, XML originales, revisiones, cobros y saldos previos. Se descarga protegido con una contraseña que solo tú conoces.</p><button class="button primary" data-action="backup">↓ Crear respaldo .nysa</button></div><div class="backup-action"><h3>Restaurar desde tu disco</h3><p>Reemplaza este espacio con un respaldo cifrado, después de validar su contraseña y contenido.</p><button class="button ghost" data-action="restore" ${demo?'disabled':''}>↥ Restaurar respaldo</button></div><div class="backup-action"><h3>Resumen de este mes</h3><p>Un CSV legible en Excel con el desglose de IVA y el detalle de comprobantes incluidos.</p><button class="text-button" data-action="export-summary">Exportar ${period} ↗</button></div></div></div></section><div class="notice info settings-note">Los datos se guardan en este navegador y dispositivo. Borrar datos del navegador o cambiar de dirección web puede dejar este espacio vacío. Guarda una copia cifrada en tu disco externo y otra en una ubicación distinta. La app no guarda tu firma electrónica ni requiere tu clave del SRI.</div><section class="panel"><div class="panel-body split"><div><h2>Explora sin tocar tus datos</h2><p class="mini-note">Prueba una venta, una compra y una retención con identificadores ficticios, en un espacio temporal separado.</p></div><button class="button ghost" data-action="demo">Abrir demo ↗</button></div></section>`;}
+  `<section class="settings-grid"><div class="panel"><div class="panel-heading"><h2>Perfil del contribuyente</h2><span class="tag">UN RUC POR ESPACIO</span></div><div class="panel-body"><form id="profile-form"><div class="form-field"><label for="profile-name">Nombre del negocio</label><input id="profile-name" name="name" maxlength="100" value="${h(state.profile.name)}" required></div><div class="form-field"><label for="profile-ruc">Tu RUC</label><input id="profile-ruc" name="ruc" inputmode="numeric" pattern="[0-9]{13}" minlength="13" maxlength="13" value="${h(state.profile.ruc)}" ${state.documents.length?'readonly':''} required><p class="form-hint">Necesario para clasificar documentos. No se consulta ni verifica tu inscripción con el SRI.${state.documents.length?' El RUC queda fijo mientras haya documentos para evitar reclasificarlos por error.':''}</p></div><div class="form-field"><label for="profile-regime">Régimen (referencia)</label><select id="profile-regime" name="regime">${['General','RIMPE emprendedor','RIMPE negocio popular','Otro / por revisar'].map(r=>`<option ${state.profile.regime===r?'selected':''}>${r}</option>`).join('')}</select><p class="form-hint">El régimen no cambia automáticamente la elegibilidad ni determina tu periodicidad tributaria.</p></div><button class="button primary" ${demo?'disabled':''}>Guardar perfil</button></form></div></div><div class="panel"><div class="panel-heading"><h2>Tus datos, bajo tu control</h2><span class="tag green">LOCAL</span></div><div class="panel-body"><div class="backup-action"><h3>Respaldo cifrado</h3><p>Incluye únicamente la compañía activa: perfil, XML originales, revisiones, cobros y saldos previos. Se descarga protegido con una contraseña que solo tú conoces.</p><button class="button primary" data-action="backup">↓ Crear respaldo .nysa</button></div><div class="backup-action"><h3>Restaurar desde tu disco</h3><p>Reemplaza este espacio con un respaldo cifrado, después de validar su contraseña y contenido.</p><button class="button ghost" data-action="restore" ${demo?'disabled':''}>↥ Restaurar respaldo</button></div><div class="backup-action"><h3>Resumen de este mes</h3><p>Un CSV legible en Excel con el desglose de IVA y el detalle de comprobantes incluidos.</p><button class="text-button" data-action="export-summary">Exportar ${period} ↗</button></div></div></div></section><div class="notice info settings-note">Los datos se guardan en este navegador y dispositivo. Borrar datos del navegador o cambiar de dirección web puede dejar este espacio vacío. Guarda una copia cifrada en tu disco externo y otra en una ubicación distinta. La app no guarda tu firma electrónica ni requiere tu clave del SRI.</div><section class="panel"><div class="panel-body split"><div><h2>Explora sin tocar tus datos</h2><p class="mini-note">Prueba una venta, una compra y una retención con identificadores ficticios, en un espacio temporal separado.</p></div><button class="button ghost" data-action="demo">Abrir demo ↗</button></div></section>`;}
 function render(){
   const changedView=$('#main').dataset.view!==view;
   disposeLedgerScene();
@@ -105,6 +120,8 @@ function render(){
   $('#page-label').textContent=labels[view];$('#mobile-nav-label').textContent=labels[view];$('#workspace-name').textContent=state.profile.name||'Mi negocio';$('#workspace-status').textContent=demo?'Demo temporal':state.profile.ruc?'RUC configurado · local':'Configura tu RUC';$('#doc-count').textContent=state.documents.length;$('#demo-banner').hidden=!demo;
   document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
   $('#main').dataset.view=view;
+  releaseWork();refreshCompanies().catch(()=>{});
+  document.querySelector('.version').textContent='NysaLedger '+VERSION+' · por Nysasoft';
   if(changedView)revealView($('#main'));
   disposeLedgerScene=mountLedgerScene($('#main'));
 }
@@ -119,7 +136,7 @@ function openDocument(id){
 }
 async function importFiles(files){
   if(importing){toast('Espera a que termine la lectura del lote actual.');return;}
-  importing=true;try{await readImportFiles(files);}finally{importing=false;}
+  importing=true;holdWork();try{await readImportFiles(files);}finally{importing=false;releaseWork();}
 }
 async function readImportFiles(files){
   if(!state.profile.ruc){navigate('settings');toast('Configura tu RUC antes de importar para distinguir ventas y compras.');return;}
@@ -166,7 +183,7 @@ async function startDemo(){
   state=addMovement(state,{date:'2026-11-12',amount:13500,kind:'income',documentId:state.documents.find(d=>d.type==='01'&&d.issuerId===demoRuc).id,description:'Transferencia ficticia neta de retenciones'});
   period='2026-11';navigate('overview');toast('Demo temporal abierta. Tus datos reales no cambiaron.');
 }
-function help(){openModal('Tu control, paso a paso',`<h3>1. Configura tu RUC</h3><p>La app compara el emisor y receptor del XML con tu RUC. Cada espacio admite un solo contribuyente.</p><h3>2. Importa y revisa</h3><p>Admite facturas, liquidaciones de compra, notas de crédito/débito y retenciones 1.0 y 2.0. Lee XML directos y comprobantes dentro de autorizaciones con CDATA. Los no autorizados se rechazan; los XML sin envoltura requieren revisión.</p><h3>3. Registra el dinero efectivo</h3><p>Una factura no significa que ya cobraste. Las retenciones vinculadas por documento de sustento reducen el saldo pendiente. Si falta el sustento o no se encuentra la factura, revisa la conciliación.</p><h3>4. Revisa tu resumen</h3><p>El IVA de compras se incorpora solo cuando marcas su elegibilidad. La renta retenida se muestra aparte. No se calculan renta anual, multas, prorrata ni regímenes especiales; no se emite ni presenta nada ante el SRI.</p><h3>5. Guarda tus respaldos</h3><p>Datos en IndexedDB de este navegador. Los respaldos usan AES-GCM de 256 bits con contraseña y PBKDF2-SHA256. Conserva una copia en tu disco externo y otra en una ubicación diferente. El SRI exige conservar comprobantes electrónicos durante 7 años.</p><p><a href="https://www.sri.gob.ec/facturacion-electronica" target="_blank" rel="noopener noreferrer">Información oficial del SRI ↗</a></p><p>El código puede compartirse; tus XML, respaldos y firma electrónica no deben formar parte del repositorio público.</p><div class="form-buttons"><button class="button primary" data-action="close-modal">Entendido</button></div>`);}
+function help(){openModal('Tu control, paso a paso',`<h3>1. Configura tu RUC</h3><p>La app compara el emisor y receptor del XML con tu RUC. Cada espacio admite un contribuyente. Usa el selector de compañía o Agregar compañía para mantener varios RUC separados.</p><h3>2. Importa y revisa</h3><p>Admite facturas, liquidaciones de compra, notas de crédito/débito y retenciones 1.0 y 2.0. Lee XML directos y comprobantes dentro de autorizaciones con CDATA. Los no autorizados se rechazan; los XML sin envoltura requieren revisión.</p><h3>3. Registra el dinero efectivo</h3><p>Una factura no significa que ya cobraste. Las retenciones vinculadas por documento de sustento reducen el saldo pendiente. Si falta el sustento o no se encuentra la factura, revisa la conciliación.</p><h3>4. Revisa tu resumen</h3><p>El IVA de compras se incorpora solo cuando marcas su elegibilidad. La renta retenida se muestra aparte. No se calculan renta anual, multas, prorrata ni regímenes especiales; no se emite ni presenta nada ante el SRI.</p><h3>5. Guarda tus respaldos</h3><p>Datos en IndexedDB de este navegador. Los respaldos usan AES-GCM de 256 bits con contraseña y PBKDF2-SHA256. Conserva una copia en tu disco externo y otra en una ubicación diferente. El SRI exige conservar comprobantes electrónicos durante 7 años.</p><p><a href="https://www.sri.gob.ec/facturacion-electronica" target="_blank" rel="noopener noreferrer">Información oficial del SRI ↗</a></p><p>El código puede compartirse; tus XML, respaldos y firma electrónica no deben formar parte del repositorio público.</p><div class="form-buttons"><button class="button primary" data-action="close-modal">Entendido</button></div>`);}
 
 document.addEventListener('click',async event=>{
   const b=event.target.closest('button');if(!b||b.disabled)return;
@@ -193,6 +210,9 @@ document.addEventListener('click',async event=>{
     else if(action==='demo')await startDemo();
     else if(action==='leave-demo'){demo=false;state=realState;period=today().slice(0,7);navigate('overview');}
     else if(action==='help')help();
+    else if(action==='add-company')companyDialog();
+    else if(action==='changelog')changelog();
+    else if(action==='nysa-help')nysaHelp();
     else if(action==='support')openModal('Apoyar NysaLedger',supportMarkup());
     else if(action==='github-preview')openModal('Una comunidad por construir',`<p>El repositorio público de NysaLedger se habilitará después de revisar esta versión local. Desde aquí podrás acceder al código, estrellas, issues y pull requests.</p><p>No se publican XML, respaldos ni datos personales. Los reportes deben usar ejemplos ficticios.</p><div class="form-buttons"><button class="button primary" data-action="close-modal">Entendido</button></div>`);
     else if(action==='install')openModal('Instalar NysaLedger',installationMarkup());
@@ -217,7 +237,9 @@ document.addEventListener('submit',async event=>{
     }
   }catch(error){if(modal.open)formError(error);else toast(error.message,true);}finally{if(submit)submit.disabled=false;}
 });
-document.addEventListener('change',event=>{
+document.addEventListener('input',event=>{if(event.target.closest('form')){dirtyInputs.add(event.target);holdWork();}});
+document.addEventListener('change',async event=>{
+  if(event.target.id==='company-picker'){try{if(workBusy())throw Error('Guarda o termina el formulario antes de cambiar de compañía.');state=await switchCompany(event.target.value);realState=state;period=today().slice(0,7);navigate('overview');toast('Compañía activa: '+state.profile.name);}catch(e){event.target.value=companyList.activeId;toast(e.message,true);}return;}
   if(event.target.id==='period'){if(/^20\d{2}-(0[1-9]|1[0-2])$/.test(event.target.value)){period=event.target.value;render();}}
   if(event.target.id==='move-document'){
     const d=state.documents.find(d=>d.id===event.target.value);if(d){$('#move-kind').value=classify(d,state.profile.ruc);$('#move-amount').value=(documentBalance(d,state)/100).toFixed(2);$('#move-description').value=`${classify(d,state.profile.ruc)==='income'?'Cobro':'Pago'} ${d.number}`;}
@@ -228,16 +250,16 @@ $('#backup-input').addEventListener('change',event=>{const file=event.target.fil
 document.addEventListener('dragover',event=>{if(event.target.closest('#dropzone')){event.preventDefault();$('#dropzone').classList.add('dragover');}});
 document.addEventListener('dragleave',event=>{if(event.target.closest('#dropzone'))$('#dropzone')?.classList.remove('dragover');});
 document.addEventListener('drop',async event=>{if(event.target.closest('#dropzone')){event.preventDefault();$('#dropzone').classList.remove('dragover');try{await importFiles(Array.from(event.dataTransfer.files));}catch(error){toast(error.message,true);}}});
-modal.addEventListener('close',()=>{modalSubmit=null;modalClosing=false;});
+modal.addEventListener('close',()=>{modalSubmit=null;modalClosing=false;releaseWork();});
 modal.addEventListener('cancel',event=>{event.preventDefault();closeModal();});
 
 syncTheme();
 function openRoute(){const route=location.hash.slice(1);if(route==='support'||route==='install'){navigate('project');openModal(route==='support'?'Apoyar NysaLedger':'Instalar NysaLedger',route==='support'?supportMarkup():installationMarkup());}else navigate(route);}
 window.addEventListener('hashchange',openRoute);
-try{state=await loadState();realState=state;openRoute();}
+try{state=await loadState();realState=state;await refreshCompanies();openRoute();releaseNotice();}
 catch(error){$('#main').innerHTML=`<div class="notice"><strong>No se pudo abrir el almacenamiento.</strong> ${h(error.message)}</div><p>Usa un navegador con IndexedDB habilitado. Los XML se guardan solo después de confirmar una importación.</p>`;}
 document.addEventListener('nysa:pwa-state',()=>{if(view==='project'&&!modal.open)render();});
-preparePwa();
+preparePwa({canUpdate:()=>canAutoUpdate({saving,importing,modalOpen:modal.open,dirty:hasDirtyForms(),demo}),onUpdate:()=>{try{localStorage.setItem('nysa-version',VERSION);}catch{}location.reload();}});
 
 
 document.addEventListener('click',event=>{if(!event.target.closest('.sidebar'))closeMobileMenu();});

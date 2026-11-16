@@ -41,3 +41,17 @@ test('los destinos de comunidad y apoyo usan los enlaces públicos aprobados',()
   for(const url of ['javascript:alert(1)','http://example.test','https://user:pass@example.test','invalid'])assert.equal(externalUrl(url),null);
   assert.equal(externalUrl('https://github.com/example/project'),'https://github.com/example/project');
 });
+
+test('actualización se activa al quedar libre y recarga al volver de una pestaña oculta',async()=>{
+ const listeners={},docListeners={},messages=[];let dirty=true,reloads=0,readyState='installed';
+ const worker={state:'installed',postMessage:m=>messages.push(m),addEventListener(name,fn){listeners['worker:'+name]=fn;}};
+ const registration={waiting:worker,installing:worker,active:worker,addEventListener(name,fn){listeners[name]=fn;},async update(){}};
+ const document={hidden:false,dispatchEvent(e){docListeners[e.type]?.();},addEventListener(name,fn){docListeners[name]=fn;}};
+ const navigator={serviceWorker:{controller:{},async register(){return registration;},ready:Promise.resolve(registration),addEventListener(name,fn){listeners[name]=fn;}},locks:{async request(name,options,fn){return fn({name});}}};
+ const context={window:{addEventListener(){}},navigator,document,isSecureContext:true,matchMedia:()=>({matches:false}),CustomEvent:class{constructor(type){this.type=type;}},setInterval(){},location:{reload(){reloads++;}}};
+ let source=await readFile(new URL('../dist/pwa.mjs',import.meta.url),'utf8');source=source.replace(/export /g,'')+';globalThis.preparePwa=preparePwa;';vm.runInNewContext(source,context);
+ await context.preparePwa({canUpdate:()=>!dirty,onUpdate:()=>reloads++});assert.equal(messages.length,0);
+ dirty=false;docListeners['nysa:idle']();await Promise.resolve();assert.equal(messages.length,1);assert.equal(messages[0].type,'ACTIVATE_UPDATE');
+ document.hidden=true;listeners.controllerchange();assert.equal(reloads,0);
+ document.hidden=false;docListeners.visibilitychange();await Promise.resolve();assert.equal(reloads,1);
+});
