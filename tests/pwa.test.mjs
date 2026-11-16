@@ -36,8 +36,8 @@ test('no intercepta XML, respaldos, consultas ni terceros; solo limpia sus propi
   assert.equal(w.activated,false);await w.dispatch('message',{data:{type:'ACTIVATE_UPDATE'}});assert.equal(w.activated,true);
 });
 
-test('solo se activa el repositorio público real y los cobros siguen deshabilitados',()=>{
-  assert.equal(project.repositoryUrl,'https://github.com/KajitsuGrisaia/NysaLedger');assert.equal(project.supportUrl,null);
+test('los destinos de comunidad y apoyo usan los enlaces públicos aprobados',()=>{
+  assert.equal(project.repositoryUrl,'https://github.com/KajitsuGrisaia/NysaLedger');assert.equal(project.supportUrl,'https://ko-fi.com/nysasoft');
   for(const url of ['javascript:alert(1)','http://example.test','https://user:pass@example.test','invalid'])assert.equal(externalUrl(url),null);
   assert.equal(externalUrl('https://github.com/example/project'),'https://github.com/example/project');
 });

@@ -3,7 +3,7 @@ export const project = Object.freeze({
   name: 'NysaLedger',
   version: '0.2.0',
   repositoryUrl: 'https://github.com/KajitsuGrisaia/NysaLedger',
-  supportUrl: null,
+  supportUrl: 'https://ko-fi.com/nysasoft',
   websiteUrl: 'https://nysasoft.io',
 });
 

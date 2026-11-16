@@ -76,7 +76,7 @@ El enlace `127.0.0.1` solo sirve en la computadora que ejecuta el servidor; no p
 
 ## Comunidad y apoyo
 
-La sección **Proyecto y comunidad** explica cómo contribuir y apoyar voluntariamente, sin funciones de pago. `dist/project.mjs` tiene los destinos de GitHub y aportes desactivados hasta que se publiquen y verifiquen. No se crean reseñas, estrellas ni enlaces de pago ficticios. El repositorio público debe habilitar Issues, pull requests y reportes privados de seguridad; Discussions es opcional para ideas y preguntas. GitHub no proporciona una puntuación de reseñas del producto: los comentarios y revisiones se realizan en issues, discusiones y pull requests.
+La sección **Proyecto y comunidad** explica cómo contribuir y apoyar voluntariamente, sin funciones de pago. `dist/project.mjs` contiene el repositorio público y el enlace de aportes voluntarios a https://ko-fi.com/nysasoft. Los pagos se gestionan fuera de la aplicación, sin enviar XML ni datos del perfil. No se crean reseñas, estrellas ni enlaces de pago ficticios. El repositorio público debe habilitar Issues, pull requests y reportes privados de seguridad; Discussions es opcional para ideas y preguntas. GitHub no proporciona una puntuación de reseñas del producto: los comentarios y revisiones se realizan en issues, discusiones y pull requests.
 
 Incluye plantillas de issues y pull requests, guía de contribución y CI de comprobaciones sin despliegue automático. El código está bajo licencia MIT; consulta `NOTICE.md` para los logotipos y las marcas.
 
