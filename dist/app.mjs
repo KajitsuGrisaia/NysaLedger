@@ -1,3 +1,4 @@
+import {mountNysaAssistant} from './assistant.mjs';
 import {VERSION,RELEASES,canAutoUpdate} from './releases.mjs';
 import './visual-palette.mjs';
 import {settlement,periodReview,importOverview} from './workflow.mjs';
@@ -22,13 +23,14 @@ const h=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const labels={overview:'Vista general',documents:'Comprobantes',movements:'Cobros y pagos',retentions:'Retenciones',summary:'Resumen mensual',settings:'Perfil y respaldos',project:'Proyecto y comunidad'};
 const kindNames={income:'Ingreso',expense:'Gasto','retention-received':'Retención recibida','retention-issued':'Retención emitida',unassigned:'Sin asignar'};
-function nysaHelp(){openModal('Nysa · Tu guía en NysaLedger',`<p class="tag">Guía local · Sin IA generativa</p><p>Encuentra el siguiente paso sin compartir tus XML ni tus datos.</p><h3>¿Cómo importo mis comprobantes?</h3><p>Selecciona la compañía correcta, configura su RUC y abre Comprobantes → Importar XML. Antes de guardar verás ingresos, gastos y retenciones del lote.</p><h3>¿Por qué el cobro es menor que la factura?</h3><p>Abre la factura para ver retenciones vinculadas, notas de crédito y cobros registrados. El saldo distingue facturado de cobrado.</p><h3>¿Cómo preparo el mes?</h3><p>En Resumen mensual revisa los documentos pendientes, el IVA de compras elegible y las retenciones de IVA y renta por separado. Exporta el CSV y confirma las obligaciones aplicables en el SRI.</p><h3>¿Puedo llevar dos compañías?</h3><p>Sí. Agrega otra compañía desde el selector lateral. Cada RUC tiene datos y respaldos independientes.</p><p class="mini-note">La conexión con NysaAI se está preparando. Esta guía no envía consultas a un modelo ni presenta declaraciones.</p><div class="form-buttons"><button class="button primary" data-action="close-modal">Entendido</button></div>`);}
+
 let state=emptyState(),realState=state,view='overview',period=today().slice(0,7),demo=false,filter='all',search='',staged=[],modalSubmit=null,restoreFile=null,saving=false,importing=false;
 const modal=$('#modal');
+const nysaAssistant=mountNysaAssistant({navigate});
 let companyList={activeId:'primary',companies:[]},workRelease=null,releaseTimer;
 const dirtyInputs=new Set();
 function hasDirtyForms(){for(const el of dirtyInputs){if(!el.isConnected){dirtyInputs.delete(el);continue;}const dialog=el.closest('dialog');if(!dialog||dialog.open)return true;}return false;}
-function workBusy(){return saving||importing||modal.open||hasDirtyForms()||demo;}
+function workBusy(){return saving||importing||modal.open||nysaAssistant.busy()||hasDirtyForms()||demo;}
 function holdWork(){if(!workRelease&&navigator.locks)navigator.locks.request('nysaledger-work',{mode:'shared'},()=>new Promise(resolve=>{workRelease=resolve;if(!workBusy())releaseWork();}));}
 function releaseWork(){if(!workBusy()&&workRelease){workRelease();workRelease=null;}document.dispatchEvent(new Event('nysa:idle'));}
 function changelog(){openModal('NysaLedger · Historial de cambios',RELEASES.map(r=>`<section><h3>v${h(r.version)}</h3><p class="mini-note">${h(r.date)}</p><ul>${r.changes.map(c=>'<li>'+h(c)+'</li>').join('')}</ul></section>`).join('')+'<div class="form-buttons"><button class="button primary" data-action="close-modal">Listo</button></div>');try{localStorage.setItem('nysa-release-read',VERSION);}catch{}$('#release-notice').hidden=true;$('#release-history').classList.remove('unread');}
@@ -212,7 +214,7 @@ document.addEventListener('click',async event=>{
     else if(action==='help')help();
     else if(action==='add-company')companyDialog();
     else if(action==='changelog')changelog();
-    else if(action==='nysa-help')nysaHelp();
+
     else if(action==='support')openModal('Apoyar NysaLedger',supportMarkup());
     else if(action==='github-preview')openModal('Una comunidad por construir',`<p>El repositorio público de NysaLedger se habilitará después de revisar esta versión local. Desde aquí podrás acceder al código, estrellas, issues y pull requests.</p><p>No se publican XML, respaldos ni datos personales. Los reportes deben usar ejemplos ficticios.</p><div class="form-buttons"><button class="button primary" data-action="close-modal">Entendido</button></div>`);
     else if(action==='install')openModal('Instalar NysaLedger',installationMarkup());
@@ -239,7 +241,7 @@ document.addEventListener('submit',async event=>{
 });
 document.addEventListener('input',event=>{if(event.target.closest('form')){dirtyInputs.add(event.target);holdWork();}});
 document.addEventListener('change',async event=>{
-  if(event.target.id==='company-picker'){try{if(workBusy())throw Error('Guarda o termina el formulario antes de cambiar de compañía.');state=await switchCompany(event.target.value);realState=state;period=today().slice(0,7);navigate('overview');toast('Compañía activa: '+state.profile.name);}catch(e){event.target.value=companyList.activeId;toast(e.message,true);}return;}
+  if(event.target.id==='company-picker'){try{if(workBusy())throw Error('Guarda o termina el formulario antes de cambiar de compañía.');nysaAssistant.reset();state=await switchCompany(event.target.value);realState=state;period=today().slice(0,7);navigate('overview');toast('Compañía activa: '+state.profile.name);}catch(e){event.target.value=companyList.activeId;toast(e.message,true);}return;}
   if(event.target.id==='period'){if(/^20\d{2}-(0[1-9]|1[0-2])$/.test(event.target.value)){period=event.target.value;render();}}
   if(event.target.id==='move-document'){
     const d=state.documents.find(d=>d.id===event.target.value);if(d){$('#move-kind').value=classify(d,state.profile.ruc);$('#move-amount').value=(documentBalance(d,state)/100).toFixed(2);$('#move-description').value=`${classify(d,state.profile.ruc)==='income'?'Cobro':'Pago'} ${d.number}`;}

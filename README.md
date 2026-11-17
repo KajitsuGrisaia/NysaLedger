@@ -107,3 +107,9 @@ Usa Compañía activa → Agregar compañía para crear un espacio por RUC. Cada
 ## Nysa
 
 Ayuda Nysa ofrece una guía local sin IA generativa. La propuesta de integración de NysaAI está en docs/nysa-ai-integration.md; el proveedor remoto no está activado y nunca se envían XML automáticamente.
+
+### Nysa assist
+
+El botón flotante Nysa permite consultar el uso de NysaLedger. Las consultas y hasta cuatro mensajes recientes se envían a la IA a través de `https://nysasoft.io/api/ledger-assistant`; los XML, RUC y datos locales no se adjuntan. La conversación permanece solo en memoria y se reinicia al cambiar de compañía o pulsar Nueva conversación. La IA no modifica registros ni presenta declaraciones. Sin conexión sigue disponible la guía Cómo funciona.
+
+El endpoint se mantiene en el Worker privado de Nysasoft: este repositorio público no contiene claves del proveedor. La política CSP permite únicamente el origen propio y la conexión explícita a Nysasoft.
