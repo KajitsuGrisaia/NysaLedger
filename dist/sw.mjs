@@ -1,5 +1,5 @@
 // Cache only public application files. Documents and backups never enter this cache.
-const CACHE = 'nysaledger-shell-v48';
+const CACHE = 'nysaledger-shell-v49';
 const FILES = ['./theme-transition.js','./orbits.mjs','./releases.mjs','./visual-palette.mjs','./workflow.mjs','./assets/kofi.png','./appearance-init.js','./appearance.mjs','./appearance.css','./cursor.js','./cursor.css','./assets/cursors/cursor-dracula-link.svg','./assets/cursors/cursor-dracula.svg','./assets/cursors/cursor-light-link.svg','./assets/cursors/cursor-light.svg','./', './index.html', './style.css', './app.mjs', './xml.mjs', './ledger.mjs', './storage.mjs', './demo.mjs', './project.mjs', './community.mjs', './pwa.mjs', './motion.mjs', './ledger-scene.mjs', './logo-geometry.mjs', './assets/symbol-geometry.svg', './assets/symbol-details.svg', './manifest.webmanifest', './assets/favicon.png', './assets/ecuador.svg', './assets/symbol.svg', './assets/symbol-animated.svg', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png'];
 const urls = new Set(FILES.map(file => new URL(file, self.registration.scope).href));
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES))));

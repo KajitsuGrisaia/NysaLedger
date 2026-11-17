@@ -4,6 +4,7 @@ const labels={orbit:'Orbit',aurora:'Aurora',terminal:'Studio',eclipse:'Eclipse'}
 function sync(){
  if(!designs.includes(root.dataset.design))root.dataset.design="orbit";
  const select=document.querySelector('[data-design-picker]');if(select)select.value=root.dataset.design;const label=document.querySelector('[data-theme-label]');if(label)label.textContent='Tema · '+labels[root.dataset.design];
+ const cycle=document.querySelector('[data-design-cycle]');if(cycle)cycle.setAttribute('aria-label','Siguiente tema: '+labels[designs[(designs.indexOf(root.dataset.design)+1)%designs.length]]);
  const light=root.dataset.theme==='light';
  root.dataset.colorMode=light?'light':'dark';
  try{localStorage.setItem('nysasoft-theme',root.dataset.design);localStorage.setItem('nysasoft-appearance',light?'light':'dark');}catch{}
@@ -11,7 +12,7 @@ function sync(){
  const back=document.querySelector('.nysasoft-return');if(back){const target=new URL(back.href);target.searchParams.set('design',root.dataset.design);target.searchParams.set('mode',light?'light':'dark');back.href=target;}
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',getComputedStyle(root).getPropertyValue('--bg').trim());
 }
-document.querySelector('[data-design-picker]')?.addEventListener('change',e=>{const next=e.target.value;if(designs.includes(next)){const update=()=>root.dataset.design=next;if(window.NysaThemeTransition)window.NysaThemeTransition.run(update,e,e.target.closest('label'));else update();}});
+document.querySelector('[data-design-cycle]')?.addEventListener('click',e=>{const next=designs[(designs.indexOf(root.dataset.design)+1)%designs.length];const update=()=>root.dataset.design=next;if(window.NysaThemeTransition)window.NysaThemeTransition.run(update,e,e.currentTarget);else update();});
 new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['data-design','data-theme']});sync();
 // Match the parent halo without lag; hide immediately when leaving the window.
 const fine=matchMedia('(hover:hover) and (pointer:fine)'),motion=matchMedia('(prefers-reduced-motion:reduce)');
